@@ -1,24 +1,27 @@
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local ServerStorage = game:GetService("ServerStorage")
 local TweenService = game:GetService("TweenService")
-local HttpService = game:GetService("HttpService")
+local UserInputService = game:GetService("UserInputService")
+local RunService = game:GetService("RunService")
 
 local LocalPlayer = Players.LocalPlayer
 local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
 
+-- Detectar si es móvil
+local isMobile = UserInputService.TouchEnabled and not UserInputService.KeyboardEnabled
+
 -- Crear GUI
 local gui = Instance.new("ScreenGui")
-gui.Name = "AdvancedSecurityScanner"
+gui.Name = "MobileSecurityScanner"
 gui.ResetOnSpawn = false
 gui.Parent = PlayerGui
 
--- Frame principal
+-- Frame principal (más pequeño para móvil)
 local mainFrame = Instance.new("Frame")
 mainFrame.Name = "MainFrame"
-mainFrame.Size = UDim2.new(0, 650, 0, 700)
-mainFrame.Position = UDim2.new(0.5, -325, 0.5, -350)
-mainFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
+mainFrame.Size = isMobile and UDim2.new(0, 320, 0, 450) or UDim2.new(0, 480, 0, 600)
+mainFrame.Position = UDim2.new(0.5, isMobile and -160 or -240, 0.5, isMobile and -225 or -300)
+mainFrame.BackgroundColor3 = Color3.fromRGB(240, 240, 240) -- Fondo claro
 mainFrame.BorderSizePixel = 0
 mainFrame.Parent = gui
 
@@ -27,26 +30,105 @@ local mainCorner = Instance.new("UICorner")
 mainCorner.CornerRadius = UDim.new(0, 12)
 mainCorner.Parent = mainFrame
 
--- Título
+-- Título (más pequeño)
 local titleLabel = Instance.new("TextLabel")
-titleLabel.Size = UDim2.new(1, 0, 0, 50)
+titleLabel.Size = UDim2.new(1, 0, 0, isMobile and 35 or 45)
 titleLabel.Position = UDim2.new(0, 0, 0, 0)
 titleLabel.BackgroundTransparency = 1
-titleLabel.Text = "🔍 Analizador Avanzado de Seguridad & Backdoors"
-titleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+titleLabel.Text = isMobile and "🔍 Scanner Seguridad" or "🔍 Security Scanner Mobile"
+titleLabel.TextColor3 = Color3.fromRGB(0, 0, 0) -- Texto negro
 titleLabel.Font = Enum.Font.GothamBold
-titleLabel.TextSize = 18
+titleLabel.TextSize = isMobile and 14 or 16
+titleLabel.TextScaled = true
 titleLabel.Parent = mainFrame
+
+-- Barra de arrastre (para facilitar el arrastre en móvil)
+local dragBar = Instance.new("Frame")
+dragBar.Size = UDim2.new(1, 0, 0, isMobile and 35 or 45)
+dragBar.Position = UDim2.new(0, 0, 0, 0)
+dragBar.BackgroundColor3 = Color3.fromRGB(200, 200, 200) -- Fondo gris claro
+dragBar.BorderSizePixel = 0
+dragBar.Parent = mainFrame
+
+local dragCorner = Instance.new("UICorner")
+dragCorner.CornerRadius = UDim.new(0, 12)
+dragCorner.Parent = dragBar
+
+-- Indicador de arrastre
+local dragIndicator = Instance.new("Frame")
+dragIndicator.Size = UDim2.new(0, 30, 0, 4)
+dragIndicator.Position = UDim2.new(0.5, -15, 0.5, -2)
+dragIndicator.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
+dragIndicator.BorderSizePixel = 0
+dragIndicator.Parent = dragBar
+
+local indicatorCorner = Instance.new("UICorner")
+indicatorCorner.CornerRadius = UDim.new(0, 2)
+indicatorCorner.Parent = dragIndicator
+
+-- Botón para ID específico
+local idButton = Instance.new("TextButton")
+idButton.Size = UDim2.new(0, isMobile and 60 or 80, 0, isMobile and 25 or 30)
+idButton.Position = UDim2.new(0, 10, 0, isMobile and 40 or 50)
+idButton.BackgroundColor3 = Color3.fromRGB(100, 150, 255)
+idButton.Text = isMobile and "ID Scan" or "Escanear ID"
+idButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+idButton.Font = Enum.Font.GothamBold
+idButton.TextSize = isMobile and 10 or 12
+idButton.TextScaled = true
+idButton.BorderSizePixel = 0
+idButton.Parent = mainFrame
+
+local idCorner = Instance.new("UICorner")
+idCorner.CornerRadius = UDim.new(0, 6)
+idCorner.Parent = idButton
+
+-- Botón para mostrar/ocultar ID
+local toggleIdButton = Instance.new("TextButton")
+toggleIdButton.Size = UDim2.new(0, isMobile and 40 or 50, 0, isMobile and 25 or 30)
+toggleIdButton.Position = UDim2.new(0, isMobile and 75 or 95, 0, isMobile and 40 or 50)
+toggleIdButton.BackgroundColor3 = Color3.fromRGB(255, 150, 50)
+toggleIdButton.Text = "👁️"
+toggleIdButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+toggleIdButton.Font = Enum.Font.GothamBold
+toggleIdButton.TextSize = isMobile and 12 or 14
+toggleIdButton.TextScaled = true
+toggleIdButton.BorderSizePixel = 0
+toggleIdButton.Parent = mainFrame
+
+local toggleIdCorner = Instance.new("UICorner")
+toggleIdCorner.CornerRadius = UDim.new(0, 6)
+toggleIdCorner.Parent = toggleIdButton
+
+-- Campo de entrada para ID
+local idInput = Instance.new("TextBox")
+idInput.Size = UDim2.new(0, isMobile and 100 or 150, 0, isMobile and 25 or 30)
+idInput.Position = UDim2.new(0, isMobile and 120 or 150, 0, isMobile and 40 or 50)
+idInput.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+idInput.Text = "118669760480330"
+idInput.TextColor3 = Color3.fromRGB(0, 0, 0)
+idInput.Font = Enum.Font.Gotham
+idInput.TextSize = isMobile and 10 or 12
+idInput.TextScaled = true
+idInput.BorderSizePixel = 1
+idInput.BorderColor3 = Color3.fromRGB(200, 200, 200)
+idInput.Visible = false
+idInput.Parent = mainFrame
+
+local idInputCorner = Instance.new("UICorner")
+idInputCorner.CornerRadius = UDim.new(0, 6)
+idInputCorner.Parent = idInput
 
 -- Estado de escaneo
 local statusLabel = Instance.new("TextLabel")
-statusLabel.Size = UDim2.new(1, -20, 0, 30)
-statusLabel.Position = UDim2.new(0, 10, 0, 60)
-statusLabel.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
-statusLabel.Text = "Listo para escaneo profundo"
-statusLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+statusLabel.Size = UDim2.new(1, isMobile and -130 or -210, 0, isMobile and 25 or 30)
+statusLabel.Position = UDim2.new(0, isMobile and 125 or 205, 0, isMobile and 40 or 50)
+statusLabel.BackgroundColor3 = Color3.fromRGB(220, 220, 220)
+statusLabel.Text = "Listo para escaneo"
+statusLabel.TextColor3 = Color3.fromRGB(0, 0, 0) -- Texto negro
 statusLabel.Font = Enum.Font.Gotham
-statusLabel.TextSize = 14
+statusLabel.TextSize = isMobile and 10 or 12
+statusLabel.TextScaled = true
 statusLabel.BorderSizePixel = 0
 statusLabel.Parent = mainFrame
 
@@ -54,15 +136,16 @@ local statusCorner = Instance.new("UICorner")
 statusCorner.CornerRadius = UDim.new(0, 6)
 statusCorner.Parent = statusLabel
 
--- Botón de escaneo
+-- Botón de escaneo (más grande para móvil)
 local scanButton = Instance.new("TextButton")
-scanButton.Size = UDim2.new(0, 250, 0, 40)
-scanButton.Position = UDim2.new(0.5, -125, 0, 100)
+scanButton.Size = UDim2.new(1, -20, 0, isMobile and 35 or 40)
+scanButton.Position = UDim2.new(0, 10, 0, isMobile and 75 or 90)
 scanButton.BackgroundColor3 = Color3.fromRGB(50, 150, 50)
-scanButton.Text = "🔍 Iniciar Escaneo Profundo"
+scanButton.Text = isMobile and "🔍 Escanear" or "🔍 Iniciar Escaneo"
 scanButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 scanButton.Font = Enum.Font.GothamBold
-scanButton.TextSize = 16
+scanButton.TextSize = isMobile and 12 or 14
+scanButton.TextScaled = true
 scanButton.BorderSizePixel = 0
 scanButton.Parent = mainFrame
 
@@ -70,14 +153,54 @@ local scanCorner = Instance.new("UICorner")
 scanCorner.CornerRadius = UDim.new(0, 8)
 scanCorner.Parent = scanButton
 
+-- Botón de minimizar/maximizar
+local minimizeButton = Instance.new("TextButton")
+minimizeButton.Size = UDim2.new(0, 25, 0, 25)
+minimizeButton.Position = UDim2.new(1, -60, 0, 5)
+minimizeButton.BackgroundColor3 = Color3.fromRGB(100, 100, 200)
+minimizeButton.Text = "-"
+minimizeButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+minimizeButton.Font = Enum.Font.GothamBold
+minimizeButton.TextSize = 16
+minimizeButton.BorderSizePixel = 0
+minimizeButton.Parent = mainFrame
+
+local minimizeCorner = Instance.new("UICorner")
+minimizeCorner.CornerRadius = UDim.new(0, 12)
+minimizeCorner.Parent = minimizeButton
+
+-- Botón de cerrar
+local closeButton = Instance.new("TextButton")
+closeButton.Size = UDim2.new(0, 25, 0, 25)
+closeButton.Position = UDim2.new(1, -30, 0, 5)
+closeButton.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
+closeButton.Text = "×"
+closeButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+closeButton.Font = Enum.Font.GothamBold
+closeButton.TextSize = 16
+closeButton.BorderSizePixel = 0
+closeButton.Parent = mainFrame
+
+local closeCorner = Instance.new("UICorner")
+closeCorner.CornerRadius = UDim.new(0, 12)
+closeCorner.Parent = closeButton
+
+-- Contenedor principal (se puede ocultar)
+local contentFrame = Instance.new("Frame")
+contentFrame.Size = UDim2.new(1, 0, 1, -35)
+contentFrame.Position = UDim2.new(0, 0, 0, 35)
+contentFrame.BackgroundTransparency = 1
+contentFrame.Parent = mainFrame
+
 -- Área de resultados
 local resultsFrame = Instance.new("ScrollingFrame")
-resultsFrame.Size = UDim2.new(1, -20, 1, -200)
-resultsFrame.Position = UDim2.new(0, 10, 0, 150)
-resultsFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
-resultsFrame.BorderSizePixel = 0
-resultsFrame.ScrollBarThickness = 8
-resultsFrame.Parent = mainFrame
+resultsFrame.Size = UDim2.new(1, -10, 1, isMobile and -120 or -140)
+resultsFrame.Position = UDim2.new(0, 5, 0, isMobile and 80 or 100)
+resultsFrame.BackgroundColor3 = Color3.fromRGB(250, 250, 250) -- Fondo blanco
+resultsFrame.BorderSizePixel = 1
+resultsFrame.BorderColor3 = Color3.fromRGB(200, 200, 200)
+resultsFrame.ScrollBarThickness = isMobile and 6 or 8
+resultsFrame.Parent = contentFrame
 
 local resultsCorner = Instance.new("UICorner")
 resultsCorner.CornerRadius = UDim.new(0, 8)
@@ -86,555 +209,251 @@ resultsCorner.Parent = resultsFrame
 -- Layout para resultados
 local resultsLayout = Instance.new("UIListLayout")
 resultsLayout.SortOrder = Enum.SortOrder.LayoutOrder
-resultsLayout.Padding = UDim.new(0, 8)
+resultsLayout.Padding = UDim.new(0, 5)
 resultsLayout.Parent = resultsFrame
 
--- Botón de copiar
+-- Botón de copiar principal
 local copyButton = Instance.new("TextButton")
-copyButton.Size = UDim2.new(0, 150, 0, 35)
-copyButton.Position = UDim2.new(1, -160, 1, -45)
+copyButton.Size = UDim2.new(0, isMobile and 60 or 80, 0, isMobile and 25 or 30)
+copyButton.Position = UDim2.new(1, isMobile and -65 or -85, 1, isMobile and -30 or -35)
 copyButton.BackgroundColor3 = Color3.fromRGB(70, 70, 200)
-copyButton.Text = "📋 Copiar Reporte"
+copyButton.Text = isMobile and "📋" or "📋 Copiar"
 copyButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 copyButton.Font = Enum.Font.Gotham
-copyButton.TextSize = 14
+copyButton.TextSize = isMobile and 12 or 12
+copyButton.TextScaled = true
 copyButton.BorderSizePixel = 0
 copyButton.Visible = false
-copyButton.Parent = mainFrame
+copyButton.Parent = contentFrame
 
 local copyCorner = Instance.new("UICorner")
 copyCorner.CornerRadius = UDim.new(0, 6)
 copyCorner.Parent = copyButton
 
+-- Botón de copiar análisis completo
+local copyAllButton = Instance.new("TextButton")
+copyAllButton.Size = UDim2.new(0, isMobile and 60 or 80, 0, isMobile and 25 or 30)
+copyAllButton.Position = UDim2.new(0, 10, 1, isMobile and -30 or -35)
+copyAllButton.BackgroundColor3 = Color3.fromRGB(200, 70, 70)
+copyAllButton.Text = isMobile and "📄" or "📄 Todo"
+copyAllButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+copyAllButton.Font = Enum.Font.Gotham
+copyAllButton.TextSize = isMobile and 12 or 12
+copyAllButton.TextScaled = true
+copyAllButton.BorderSizePixel = 0
+copyAllButton.Visible = false
+copyAllButton.Parent = contentFrame
+
+local copyAllCorner = Instance.new("UICorner")
+copyAllCorner.CornerRadius = UDim.new(0, 6)
+copyAllButton.Parent = copyAllButton
+
+-- Botón para copiar solo el ID
+local copyIdButton = Instance.new("TextButton")
+copyIdButton.Size = UDim2.new(0, isMobile and 60 or 80, 0, isMobile and 25 or 30)
+copyIdButton.Position = UDim2.new(0.5, isMobile and -30 or -40, 1, isMobile and -30 or -35)
+copyIdButton.BackgroundColor3 = Color3.fromRGB(50, 150, 100)
+copyIdButton.Text = isMobile and "🎯" or "🎯 ID"
+copyIdButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+copyIdButton.Font = Enum.Font.Gotham
+copyIdButton.TextSize = isMobile and 12 or 12
+copyIdButton.TextScaled = true
+copyIdButton.BorderSizePixel = 0
+copyIdButton.Visible = false
+copyIdButton.Parent = contentFrame
+
+local copyIdCorner = Instance.new("UICorner")
+copyIdCorner.CornerRadius = UDim.new(0, 6)
+copyIdCorner.Parent = copyIdButton
+
 -- Variables globales
 local scanResults = {}
 local isScanning = false
-local backdoorPatterns = {}
-local remoteAnalysis = {}
-local scriptAnalysis = {}
+local isDragging = false
+local dragStart = nil
+local startPos = nil
+local isMinimized = false
+local targetId = 118669760480330
+local idInputVisible = false
 
--- Patrones de backdoor conocidos (expandidos)
+-- Patrones de backdoor simplificados para móvil
 local backdoorSignatures = {
-    ["require%((%d+)%)"] = "Backdoor por require() con ID sospechoso",
-    ["loadstring%("] = "Backdoor por loadstring() - Ejecución de código dinámico",
-    ["getfenv%("] = "Manipulación de entorno con getfenv()",
-    ["setfenv%("] = "Manipulación de entorno con setfenv()",
-    ["_G%["] = "Acceso a variables globales _G",
-    ["shared%."] = "Uso de tabla shared para comunicación entre scripts",
-    ["game:HttpGet"] = "Descarga de scripts externos via HTTP",
-    ["game:GetService%(\"HttpService\"%)"] = "Acceso a HttpService",
-    ["spawn%(function%(%)"] = "Creación de hilos con spawn()",
-    ["coroutine%."] = "Manipulación de corrutinas",
+    ["require%((%d+)%)"] = "Backdoor por require()",
+    ["loadstring%("] = "Backdoor por loadstring()",
+    ["getfenv%("] = "Manipulación de entorno",
+    ["_G%["] = "Acceso a variables globales",
+    ["game:HttpGet"] = "Descarga de scripts externos",
+    ["spawn%(function%(%)"] = "Creación de hilos",
     ["debug%."] = "Uso de librería debug",
-    ["rawget%("] = "Acceso directo con rawget()",
-    ["rawset%("] = "Modificación directa con rawset()",
-    ["pcall%(require"] = "Require protegido con pcall",
-    ["xpcall%("] = "Ejecución protegida con xpcall",
-    ["game%.Players%.LocalPlayer"] = "Acceso a LocalPlayer (posible ClientScript malicioso)",
-    ["%.MouseButton1Click"] = "Evento de click (posible activador)",
-    ["%.KeyDown"] = "Evento de tecla (posible activador)",
-    ["%.Chatted"] = "Evento de chat (posible comando)",
-    ["if%s+.-%s*==%s*[\"']admin[\"']"] = "Verificación de admin en chat",
-    ["if%s+.-%s*==%s*[\"']owner[\"']"] = "Verificación de owner en chat",
-    ["MarketplaceService:UserOwnsGamePassAsync"] = "Verificación de GamePass (posible bypass)",
-    ["MarketplaceService:PlayerOwnsAsset"] = "Verificación de Asset (posible bypass)",
-    ["workspace%.FilteringEnabled%s*=%s*false"] = "Desactivación de FilteringEnabled",
-    ["%.Value%s*=%s*999"] = "Modificación de valores a números altos",
-    ["%.WalkSpeed%s*=%s*%d+"] = "Modificación de velocidad de caminar",
-    ["%.JumpPower%s*=%s*%d+"] = "Modificación de poder de salto",
-    ["%.Health%s*=%s*math%.huge"] = "Modificación de salud a infinito",
-    ["%.MaxHealth%s*=%s*math%.huge"] = "Modificación de salud máxima a infinito",
-    ["%.CFrame%s*=%s*CFrame%.new"] = "Modificación de posición (teletransporte)",
-    ["game%.Players:GetPlayers%(%)"] = "Obtención de lista de jugadores",
-    ["plr:Kick%("] = "Función de expulsión de jugadores",
-    ["plr:Ban%("] = "Función de baneo de jugadores",
+    ["%.MouseButton1Click"] = "Evento de click sospechoso",
+    ["%.Chatted"] = "Evento de chat",
+    ["if%s+.-%s*==%s*[\"']admin[\"']"] = "Verificación de admin",
+    ["%.WalkSpeed%s*=%s*%d+"] = "Modificación de velocidad",
+    ["%.Health%s*=%s*math%.huge"] = "Modificación de salud",
     ["game:Shutdown%("] = "Función de apagar servidor",
-    ["Instance%.new%(\"RemoteEvent\"%)"] = "Creación dinámica de RemoteEvent",
-    ["Instance%.new%(\"RemoteFunction\"%)"] = "Creación dinámica de RemoteFunction",
-    ["table%.concat"] = "Concatenación de tablas (posible obfuscación)",
-    ["string%.char"] = "Conversión de caracteres (posible obfuscación)",
-    ["string%.byte"] = "Conversión a bytes (posible obfuscación)",
-    ["string%.reverse"] = "Inversión de strings (posible obfuscación)",
-    ["string%.gsub"] = "Sustitución de strings (posible obfuscación)",
-    ["string%.match"] = "Coincidencia de patrones (posible obfuscación)",
-    ["string%.find"] = "Búsqueda en strings (posible obfuscación)",
-    ["%.OnServerEvent"] = "Conexión a evento del servidor",
-    ["%.OnClientEvent"] = "Conexión a evento del cliente",
-    ["%.OnServerInvoke"] = "Función del servidor",
-    ["%.OnClientInvoke"] = "Función del cliente",
-    ["while%s+true%s+do"] = "Bucle infinito (posible lag)",
-    ["for%s+i%s*=%s*1%s*,%s*math%.huge"] = "Bucle infinito con math.huge",
-    ["wait%(%s*0%s*%)"] = "Wait(0) - Puede causar lag",
-    ["RunService%.Heartbeat"] = "Evento de frame (posible lag)",
-    ["RunService%.Stepped"] = "Evento de step (posible lag)",
+    ["while%s+true%s+do"] = "Bucle infinito",
     ["UserInputService"] = "Acceso a input del usuario",
-    ["TweenService"] = "Servicio de animaciones",
-    ["DataStoreService"] = "Acceso a DataStore",
-    ["MessagingService"] = "Servicio de mensajería",
-    ["TeleportService"] = "Servicio de teletransporte",
-    ["workspace:FindFirstChild"] = "Búsqueda de objetos específicos",
-    ["workspace:WaitForChild"] = "Espera por objetos específicos",
-    ["game:FindFirstChild"] = "Búsqueda global de objetos",
-    ["game:WaitForChild"] = "Espera global por objetos"
+    ["DataStoreService"] = "Acceso a DataStore"
 }
 
--- Patrones de funciones peligrosas en RemoteEvents (expandidos)
-local dangerousRemoteFunctions = {
-    ["admin"] = "Función administrativa",
-    ["kick"] = "Expulsión de jugadores",
-    ["ban"] = "Baneo de jugadores",
-    ["teleport"] = "Teletransporte",
-    ["money"] = "Manipulación de dinero",
-    ["cash"] = "Manipulación de dinero",
-    ["coins"] = "Manipulación de monedas",
-    ["robux"] = "Manipulación de Robux",
-    ["walkspeed"] = "Modificación de velocidad",
-    ["jumppower"] = "Modificación de salto",
-    ["health"] = "Modificación de salud",
-    ["god"] = "Modo dios",
-    ["fly"] = "Vuelo",
-    ["noclip"] = "Atravesar paredes",
-    ["invisible"] = "Invisibilidad",
-    ["kill"] = "Eliminar jugador",
-    ["respawn"] = "Reaparecer jugador",
-    ["team"] = "Cambio de equipo",
-    ["rank"] = "Cambio de rango",
-    ["permission"] = "Modificación de permisos",
-    ["owner"] = "Funciones de propietario",
-    ["developer"] = "Funciones de desarrollador",
-    ["moderator"] = "Funciones de moderador",
-    ["vip"] = "Funciones VIP",
-    ["premium"] = "Funciones premium",
-    ["gamepass"] = "Verificación de GamePass",
-    ["purchase"] = "Compras",
-    ["buy"] = "Comprar",
-    ["sell"] = "Vender",
-    ["trade"] = "Intercambio",
-    ["give"] = "Dar items",
-    ["take"] = "Quitar items",
-    ["steal"] = "Robar",
-    ["hack"] = "Hackear",
-    ["exploit"] = "Explotar",
-    ["cheat"] = "Trampa",
-    ["bypass"] = "Omitir verificación",
-    ["execute"] = "Ejecutar código",
-    ["run"] = "Ejecutar",
-    ["eval"] = "Evaluar código",
-    ["load"] = "Cargar código",
-    ["require"] = "Requerir módulo",
-    ["spawn"] = "Crear hilo",
-    ["command"] = "Comando",
-    ["cmd"] = "Comando",
-    ["script"] = "Script",
-    ["code"] = "Código",
-    ["function"] = "Función",
-    ["event"] = "Evento",
-    ["fire"] = "Disparar evento",
-    ["invoke"] = "Invocar función",
-    ["call"] = "Llamar función",
-    ["data"] = "Manipulación de datos",
-    ["save"] = "Guardar datos",
-    ["load"] = "Cargar datos",
-    ["delete"] = "Eliminar datos",
-    ["update"] = "Actualizar datos",
-    ["set"] = "Establecer valores",
-    ["get"] = "Obtener valores",
-    ["change"] = "Cambiar valores",
-    ["modify"] = "Modificar valores"
-}
-
--- Función para detectar funciones específicas del script
-local function detectScriptFunctions(source)
-    local functions = {}
+-- Función para agregar resultado (versión móvil con texto negro)
+local function addMobileResult(severity, title, description, location)
+    table.insert(scanResults, {
+        severity = severity,
+        title = title,
+        description = description,
+        location = location or "Desconocido"
+    })
     
-    -- Detectar funciones definidas
-    for funcName in source:gmatch("function%s+([%w_]+)%s*%(") do
-        table.insert(functions, "Función definida: " .. funcName)
-    end
+    -- Crear elemento visual compacto
+    local resultFrame = Instance.new("Frame")
+    resultFrame.Size = UDim2.new(1, -5, 0, isMobile and 60 or 80)
+    resultFrame.BackgroundColor3 = severity == "BACKDOOR" and Color3.fromRGB(255, 200, 200) or
+                                  severity == "CRÍTICO" and Color3.fromRGB(255, 220, 220) or
+                                  severity == "ALTO" and Color3.fromRGB(255, 240, 200) or
+                                  severity == "MEDIO" and Color3.fromRGB(255, 255, 200) or
+                                  Color3.fromRGB(200, 240, 255)
+    resultFrame.BorderSizePixel = 1
+    resultFrame.BorderColor3 = Color3.fromRGB(180, 180, 180)
+    resultFrame.Parent = resultsFrame
     
-    -- Detectar funciones locales
-    for funcName in source:gmatch("local%s+function%s+([%w_]+)%s*%(") do
-        table.insert(functions, "Función local: " .. funcName)
-    end
+    local resultCorner = Instance.new("UICorner")
+    resultCorner.CornerRadius = UDim.new(0, 6)
+    resultCorner.Parent = resultFrame
     
-    -- Detectar variables importantes
-    for varName in source:gmatch("local%s+([%w_]+)%s*=%s*game:GetService") do
-        table.insert(functions, "Servicio: " .. varName)
-    end
+    local severityLabel = Instance.new("TextLabel")
+    severityLabel.Size = UDim2.new(0, isMobile and 50 or 70, 0, isMobile and 15 or 20)
+    severityLabel.Position = UDim2.new(0, 5, 0, 3)
+    severityLabel.BackgroundTransparency = 1
+    severityLabel.Text = severity
+    severityLabel.TextColor3 = Color3.fromRGB(0, 0, 0) -- Texto negro
+    severityLabel.Font = Enum.Font.GothamBold
+    severityLabel.TextSize = isMobile and 8 or 10
+    severityLabel.TextScaled = true
+    severityLabel.TextXAlignment = Enum.TextXAlignment.Left
+    severityLabel.Parent = resultFrame
     
-    -- Detectar conexiones de eventos
-    for eventName in source:gmatch("%.([%w_]+):Connect%(") do
-        table.insert(functions, "Evento conectado: " .. eventName)
-    end
+    local titleLabel = Instance.new("TextLabel")
+    titleLabel.Size = UDim2.new(1, isMobile and -60 or -80, 0, isMobile and 20 or 25)
+    titleLabel.Position = UDim2.new(0, isMobile and 55 or 75, 0, 3)
+    titleLabel.BackgroundTransparency = 1
+    titleLabel.Text = title
+    titleLabel.TextColor3 = Color3.fromRGB(0, 0, 0) -- Texto negro
+    titleLabel.Font = Enum.Font.GothamBold
+    titleLabel.TextSize = isMobile and 10 or 12
+    titleLabel.TextScaled = true
+    titleLabel.TextXAlignment = Enum.TextXAlignment.Left
+    titleLabel.Parent = resultFrame
     
-    -- Detectar RemoteEvents utilizados
-    for remoteName in source:gmatch("([%w_]+):FireServer%(") do
-        table.insert(functions, "FireServer: " .. remoteName)
-    end
+    local descLabel = Instance.new("TextLabel")
+    descLabel.Size = UDim2.new(1, -10, 0, isMobile and 35 or 45)
+    descLabel.Position = UDim2.new(0, 5, 0, isMobile and 20 or 25)
+    descLabel.BackgroundTransparency = 1
+    descLabel.Text = description .. "\n📍 " .. location
+    descLabel.TextColor3 = Color3.fromRGB(0, 0, 0) -- Texto negro
+    descLabel.Font = Enum.Font.Gotham
+    descLabel.TextSize = isMobile and 8 or 9
+    descLabel.TextScaled = true
+    descLabel.TextXAlignment = Enum.TextXAlignment.Left
+    descLabel.TextYAlignment = Enum.TextYAlignment.Top
+    descLabel.TextWrapped = true
+    descLabel.Parent = resultFrame
     
-    for remoteName in source:gmatch("([%w_]+):InvokeServer%(") do
-        table.insert(functions, "InvokeServer: " .. remoteName)
-    end
-    
-    -- Detectar DataStores
-    for dataName in source:gmatch("GetDataStore%(\"([^\"]+)\"%)") do
-        table.insert(functions, "DataStore: " .. dataName)
-    end
-    
-    -- Detectar GUI creados
-    for guiName in source:gmatch("Instance%.new%(\"([^\"]*Gui[^\"]*)\"%)"  ) do
-        table.insert(functions, "GUI creado: " .. guiName)
-    end
-    
-    return functions
+    -- Actualizar tamaño del ScrollingFrame
+    resultsFrame.CanvasSize = UDim2.new(0, 0, 0, resultsLayout.AbsoluteContentSize.Y)
 end
 
--- Función para analizar propósito del script
-local function analyzeScriptPurpose(script, source)
-    local purpose = {}
-    local category = "Desconocido"
+-- Función para mostrar/ocultar el ID
+local function toggleIdInput()
+    idInputVisible = not idInputVisible
+    idInput.Visible = idInputVisible
     
-    -- Analizar por ubicación
-    local location = script:GetFullName()
-    if location:find("StarterPlayer") then
-        table.insert(purpose, "Script de jugador")
-        category = "Cliente"
-    elseif location:find("ServerScriptService") then
-        table.insert(purpose, "Script del servidor")
-        category = "Servidor"
-    elseif location:find("ReplicatedStorage") then
-        table.insert(purpose, "Script replicado")
-        category = "Compartido"
-    elseif location:find("Workspace") then
-        table.insert(purpose, "Script en workspace")
-        category = "Juego"
+    if idInputVisible then
+        toggleIdButton.Text = "🙈"
+        statusLabel.Size = UDim2.new(1, isMobile and -280 or -370, 0, isMobile and 25 or 30)
+        statusLabel.Position = UDim2.new(0, isMobile and 275 or 365, 0, isMobile and 40 or 50)
+    else
+        toggleIdButton.Text = "👁️"
+        statusLabel.Size = UDim2.new(1, isMobile and -130 or -210, 0, isMobile and 25 or 30)
+        statusLabel.Position = UDim2.new(0, isMobile and 125 or 205, 0, isMobile and 40 or 50)
     end
-    
-    -- Analizar por contenido
-    if source:find("UserInputService") then
-        table.insert(purpose, "Manejo de input del usuario")
-        category = "Input"
-    end
-    
-    if source:find("TweenService") then
-        table.insert(purpose, "Animaciones")
-        category = "Animación"
-    end
-    
-    if source:find("DataStoreService") then
-        table.insert(purpose, "Persistencia de datos")
-        category = "Datos"
-    end
-    
-    if source:find("RemoteEvent") or source:find("RemoteFunction") then
-        table.insert(purpose, "Comunicación cliente-servidor")
-        category = "Comunicación"
-    end
-    
-    if source:find("GUI") or source:find("Frame") or source:find("TextButton") then
-        table.insert(purpose, "Interfaz de usuario")
-        category = "UI"
-    end
-    
-    if source:find("Touched") or source:find("BodyVelocity") or source:find("BodyPosition") then
-        table.insert(purpose, "Físicas/Movimiento")
-        category = "Física"
-    end
-    
-    if source:find("Chatted") or source:find("PlayerAdded") or source:find("PlayerRemoving") then
-        table.insert(purpose, "Eventos de jugador")
-        category = "Jugador"
-    end
-    
-    if source:find("MarketplaceService") then
-        table.insert(purpose, "Compras/GamePasses")
-        category = "Monetización"
-    end
-    
-    if source:find("TeleportService") then
-        table.insert(purpose, "Teletransporte entre juegos")
-        category = "Teletransporte"
-    end
-    
-    return purpose, category
 end
 
--- Función para analizar código de script (mejorada)
-local function analyzeScript(script)
-    local analysis = {
-        backdoors = {},
-        functions = {},
-        risks = {},
-        purpose = {},
-        category = "Desconocido",
-        obfuscated = false,
-        suspicious = false,
-        lineCount = 0,
-        complexity = "Baja"
-    }
+-- Función para escanear ID específico
+local function scanSpecificId()
+    if isScanning then return end
+    isScanning = true
     
-    local success, source = pcall(function()
-        return script.Source
-    end)
+    -- Obtener ID del input
+    local currentId = tonumber(idInput.Text) or targetId
     
-    if not success then
-        analysis.risks[#analysis.risks + 1] = "No se puede leer el código fuente - Posible protección"
-        return analysis
-    end
+    statusLabel.Text = "🔍 Buscando ID " .. currentId .. "..."
+    statusLabel.BackgroundColor3 = Color3.fromRGB(255, 255, 0)
+    idButton.Text = "⏳ Espera..."
+    idButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
     
-    if source == "" then
-        analysis.risks[#analysis.risks + 1] = "Script vacío o código oculto"
-        return analysis
-    end
+    local found = false
     
-    -- Contar líneas
-    analysis.lineCount = select(2, source:gsub('\n', '\n')) + 1
+    wait(0.5)
     
-    -- Determinar complejidad
-    if analysis.lineCount > 500 then
-        analysis.complexity = "Muy Alta"
-    elseif analysis.lineCount > 200 then
-        analysis.complexity = "Alta"
-    elseif analysis.lineCount > 50 then
-        analysis.complexity = "Media"
-    end
-    
-    -- Detectar propósito
-    analysis.purpose, analysis.category = analyzeScriptPurpose(script, source)
-    
-    -- Detectar funciones específicas
-    analysis.functions = detectScriptFunctions(source)
-    
-    -- Verificar obfuscación (mejorada)
-    local obfuscationIndicators = {
-        string.len(source:gsub("%s", "")) > string.len(source) * 0.8, -- Muy poco espaciado
-        source:find("\\x%x%x"), -- Caracteres hexadecimales
-        source:find("\\%d%d%d"), -- Caracteres decimales
-        source:find("string%.char%(") and source:find("string%.byte%("), -- Conversión de caracteres
-        source:find("table%.concat") and source:find("string%.reverse"), -- Manipulación de strings
-        string.len(source:match("[%w_]+") or "") < 3, -- Variables muy cortas
-        source:find("%f[%w_]l%f[%W]") and source:find("%f[%w_]II%f[%W]"), -- Caracteres similares (l vs I)
-        source:find("_G%[") and source:find("getfenv"), -- Manipulación de entorno
-        source:find("loadstring") and source:find("string%.char"), -- Loadstring con char
-        source:find("pcall") and source:find("require") and source:find("%d+") -- Require con pcall
-    }
-    
-    local obfuscationCount = 0
-    for _, indicator in pairs(obfuscationIndicators) do
-        if indicator then obfuscationCount = obfuscationCount + 1 end
-    end
-    
-    if obfuscationCount >= 3 then
-        analysis.obfuscated = true
-        analysis.risks[#analysis.risks + 1] = "Código posiblemente obfuscado (" .. obfuscationCount .. " indicadores)"
-    end
-    
-    -- Buscar patrones de backdoor
-    for pattern, description in pairs(backdoorSignatures) do
-        if source:find(pattern) then
-            analysis.backdoors[#analysis.backdoors + 1] = {
-                pattern = pattern,
-                description = description,
-                match = source:match(pattern) or "Encontrado"
-            }
-        end
-    end
-    
-    -- Verificar funciones sospechosas
-    for dangerous, desc in pairs(dangerousRemoteFunctions) do
-        if source:lower():find(dangerous) then
-            analysis.risks[#analysis.risks + 1] = "Función sospechosa encontrada: " .. dangerous .. " (" .. desc .. ")"
-            analysis.suspicious = true
-        end
-    end
-    
-    return analysis
-end
-
--- Función para analizar RemoteEvent/RemoteFunction (mejorada)
-local function analyzeRemote(remote)
-    local analysis = {
-        name = remote.Name,
-        type = remote.ClassName,
-        location = remote:GetFullName(),
-        risks = {},
-        functions = {},
-        connections = {},
-        parameters = {},
-        suspicious = false,
-        serverScripts = {},
-        clientScripts = {}
-    }
-    
-    -- Verificar nombre del remote
-    for dangerous, desc in pairs(dangerousRemoteFunctions) do
-        if remote.Name:lower():find(dangerous) then
-            analysis.risks[#analysis.risks + 1] = "Nombre sospechoso: " .. desc
-            analysis.suspicious = true
-        end
-    end
-    
-    -- Verificar ubicación del remote
-    if remote.Parent == workspace then
-        analysis.risks[#analysis.risks + 1] = "RemoteEvent en Workspace - Ubicación inusual"
-    elseif remote.Parent == game.Lighting then
-        analysis.risks[#analysis.risks + 1] = "RemoteEvent en Lighting - Ubicación sospechosa"
-    elseif remote.Parent == game.SoundService then
-        analysis.risks[#analysis.risks + 1] = "RemoteEvent en SoundService - Ubicación sospechosa"
-    elseif remote.Parent == game.StarterPack then
-        analysis.risks[#analysis.risks + 1] = "RemoteEvent en StarterPack - Ubicación sospechosa"
-    end
-    
-    -- Buscar scripts que usen este remote
-    for _, script in pairs(game:GetDescendants()) do
-        if script:IsA("Script") or script:IsA("LocalScript") then
+    -- Buscar el ID específico
+    for _, obj in pairs(game:GetDescendants()) do
+        if obj:IsA("Script") or obj:IsA("LocalScript") then
             local success, source = pcall(function()
-                return script.Source
+                return obj.Source
             end)
             
-            if success and source:find(remote.Name) then
-                local scriptInfo = script:GetFullName()
-                
-                -- Verificar si es script del servidor o cliente
-                if script:IsA("Script") then
-                    table.insert(analysis.serverScripts, scriptInfo)
-                else
-                    table.insert(analysis.clientScripts, scriptInfo)
-                end
-                
-                -- Verificar cómo se usa
-                if source:find(remote.Name .. ":FireServer%(") then
-                    table.insert(analysis.connections, "FireServer (Cliente -> Servidor)")
-                elseif source:find(remote.Name .. ":InvokeServer%(") then
-                    table.insert(analysis.connections, "InvokeServer (Cliente -> Servidor)")
-                elseif source:find(remote.Name .. ":FireClient%(") then
-                    table.insert(analysis.connections, "FireClient (Servidor -> Cliente)")
-                elseif source:find(remote.Name .. ":InvokeClient%(") then
-                    table.insert(analysis.connections, "InvokeClient (Servidor -> Cliente)")
-                end
-                
-                -- Verificar conexiones de eventos
-                if source:find(remote.Name .. "%.OnServerEvent:Connect%(") then
-                    table.insert(analysis.connections, "OnServerEvent conectado")
-                elseif source:find(remote.Name .. "%.OnClientEvent:Connect%(") then
-                    table.insert(analysis.connections, "OnClientEvent conectado")
-                elseif source:find(remote.Name .. "%.OnServerInvoke") then
-                    table.insert(analysis.connections, "OnServerInvoke asignado")
-                elseif source:find(remote.Name .. "%.OnClientInvoke") then
-                    table.insert(analysis.connections, "OnClientInvoke asignado")
-                end
-                
-                -- Extraer parámetros
-                local params = source:match(remote.Name .. ":Fire.-%((.-)%)")
-                if params then
-                    table.insert(analysis.parameters, params)
-                end
-                
-                -- Verificar funciones peligrosas en el contexto
-                for dangerous, desc in pairs(dangerousRemoteFunctions) do
-                    if source:lower():find(dangerous) then
-                        analysis.risks[#analysis.risks + 1] = "Función peligrosa en script: " .. desc
+            if success and source ~= "" then
+                if source:find(tostring(currentId)) then
+                    found = true
+                    addMobileResult(
+                        "BACKDOOR",
+                        "🎯 ID ENCONTRADO: " .. obj.Name,
+                        "Contiene el ID " .. currentId,
+                        obj:GetFullName()
+                    )
+                    
+                    -- Verificar otros patrones en el mismo script
+                    for pattern, description in pairs(backdoorSignatures) do
+                        if source:find(pattern) then
+                            addMobileResult(
+                                "CRÍTICO",
+                                "⚠️ " .. obj.Name,
+                                description,
+                                obj:GetFullName()
+                            )
+                            break
+                        end
                     end
                 end
             end
         end
     end
     
-    return analysis
-end
-
--- Función para agregar resultado detallado
-local function addDetailedResult(severity, title, description, location, details)
-    local result = {
-        severity = severity,
-        title = title,
-        description = description,
-        location = location or "Desconocido",
-        details = details or {}
-    }
-    table.insert(scanResults, result)
-    
-    -- Crear elemento visual expandido
-    local resultFrame = Instance.new("Frame")
-    resultFrame.Size = UDim2.new(1, -10, 0, 120 + (#details * 15))
-    resultFrame.BackgroundColor3 = severity == "BACKDOOR" and Color3.fromRGB(200, 0, 0) or
-                                  severity == "CRÍTICO" and Color3.fromRGB(150, 30, 30) or
-                                  severity == "ALTO" and Color3.fromRGB(200, 100, 30) or
-                                  severity == "MEDIO" and Color3.fromRGB(200, 200, 30) or
-                                  Color3.fromRGB(30, 100, 200)
-    resultFrame.BorderSizePixel = 0
-    resultFrame.Parent = resultsFrame
-    
-    local resultCorner = Instance.new("UICorner")
-    resultCorner.CornerRadius = UDim.new(0, 8)
-    resultCorner.Parent = resultFrame
-    
-    local severityLabel = Instance.new("TextLabel")
-    severityLabel.Size = UDim2.new(0, 100, 0, 25)
-    severityLabel.Position = UDim2.new(0, 8, 0, 8)
-    severityLabel.BackgroundTransparency = 1
-    severityLabel.Text = severity
-    severityLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-    severityLabel.Font = Enum.Font.GothamBold
-    severityLabel.TextSize = 14
-    severityLabel.TextXAlignment = Enum.TextXAlignment.Left
-    severityLabel.Parent = resultFrame
-    
-    local titleLabel = Instance.new("TextLabel")
-    titleLabel.Size = UDim2.new(1, -120, 0, 25)
-    titleLabel.Position = UDim2.new(0, 108, 0, 8)
-    titleLabel.BackgroundTransparency = 1
-    titleLabel.Text = title
-    titleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-    titleLabel.Font = Enum.Font.GothamBold
-    titleLabel.TextSize = 16
-    titleLabel.TextXAlignment = Enum.TextXAlignment.Left
-    titleLabel.Parent = resultFrame
-    
-    local descLabel = Instance.new("TextLabel")
-    descLabel.Size = UDim2.new(1, -16, 0, 40)
-    descLabel.Position = UDim2.new(0, 8, 0, 33)
-    descLabel.BackgroundTransparency = 1
-    descLabel.Text = description
-    descLabel.TextColor3 = Color3.fromRGB(220, 220, 220)
-    descLabel.Font = Enum.Font.Gotham
-    descLabel.TextSize = 12
-    descLabel.TextXAlignment = Enum.TextXAlignment.Left
-    descLabel.TextYAlignment = Enum.TextYAlignment.Top
-    descLabel.TextWrapped = true
-    descLabel.Parent = resultFrame
-    
-    local locationLabel = Instance.new("TextLabel")
-    locationLabel.Size = UDim2.new(1, -16, 0, 20)
-    locationLabel.Position = UDim2.new(0, 8, 0, 73)
-    locationLabel.BackgroundTransparency = 1
-    locationLabel.Text = "📍 " .. location
-    locationLabel.TextColor3 = Color3.fromRGB(180, 180, 180)
-    locationLabel.Font = Enum.Font.Gotham
-    locationLabel.TextSize = 11
-    locationLabel.TextXAlignment = Enum.TextXAlignment.Left
-    locationLabel.Parent = resultFrame
-
-    -- Agregar detalles
-    for i, detail in pairs(details) do
-        local detailLabel = Instance.new("TextLabel")
-        detailLabel.Size = UDim2.new(1, -24, 0, 15)
-        detailLabel.Position = UDim2.new(0, 16, 0, 93 + (i * 15))
-        detailLabel.BackgroundTransparency = 1
-        detailLabel.Text = "• " .. detail
-        detailLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
-        detailLabel.Font = Enum.Font.Gotham
-        detailLabel.TextSize = 10
-        detailLabel.TextXAlignment = Enum.TextXAlignment.Left
-        detailLabel.Parent = resultFrame
+    if not found then
+        addMobileResult(
+            "INFO",
+            "❌ ID no encontrado",
+            "El ID " .. currentId .. " no se encontró en ningún script",
+            "Búsqueda completada"
+        )
     end
     
-    -- Actualizar tamaño del ScrollingFrame
+    statusLabel.Text = found and "🎯 ID Encontrado" or "❌ ID No Encontrado"
+    statusLabel.BackgroundColor3 = found and Color3.fromRGB(255, 100, 100) or Color3.fromRGB(100, 255, 100)
+    idButton.Text = isMobile and "ID Scan" or "Escanear ID"
+    idButton.BackgroundColor3 = Color3.fromRGB(100, 150, 255)
+    
+    copyButton.Visible = true
+    copyAllButton.Visible = true
+    copyIdButton.Visible = true
+    isScanning = false
+    
     resultsFrame.CanvasSize = UDim2.new(0, 0, 0, resultsLayout.AbsoluteContentSize.Y)
 end
 
--- Función principal de escaneo
-local function performSecurityScan()
+-- Función de escaneo simplificada para móvil
+local function performMobileScan()
     if isScanning then return end
     isScanning = true
     
@@ -646,305 +465,138 @@ local function performSecurityScan()
         end
     end
     
-    statusLabel.Text = "🔍 Escaneando el juego..."
-    statusLabel.BackgroundColor3 = Color3.fromRGB(200, 150, 0)
-    scanButton.Text = "⏳ Escaneando..."
+    statusLabel.Text = "🔍 Escaneando..."
+    statusLabel.BackgroundColor3 = Color3.fromRGB(255, 255, 0)
+    scanButton.Text = "⏳ Espera..."
     scanButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
     
     local totalScripts = 0
-    local totalRemotes = 0
     local backdoorsFound = 0
     local criticalIssues = 0
-    local highRiskItems = 0
     
-    -- Escanear todos los scripts
+    wait(0.5)
+    
+    -- Escanear scripts (versión optimizada)
     for _, obj in pairs(game:GetDescendants()) do
-        if obj:IsA("Script") or obj:IsA("LocalScript") or obj:IsA("ModuleScript") then
+        if obj:IsA("Script") or obj:IsA("LocalScript") then
             totalScripts = totalScripts + 1
             
-            local analysis = analyzeScript(obj)
+            local success, source = pcall(function()
+                return obj.Source
+            end)
             
-            -- Verificar backdoors
-            if #analysis.backdoors > 0 then
-                backdoorsFound = backdoorsFound + 1
-                local backdoorDetails = {}
-                for _, backdoor in pairs(analysis.backdoors) do
-                    table.insert(backdoorDetails, backdoor.description .. " - " .. backdoor.match)
+            if success and source ~= "" then
+                -- Verificar backdoors
+                for pattern, description in pairs(backdoorSignatures) do
+                    if source:find(pattern) then
+                        backdoorsFound = backdoorsFound + 1
+                        addMobileResult(
+                            "BACKDOOR",
+                            "🚨 " .. obj.Name,
+                            description,
+                            obj:GetFullName()
+                        )
+                        break
+                    end
                 end
                 
-                addDetailedResult(
-                    "BACKDOOR",
-                    "🚨 Backdoor Detectado: " .. obj.Name,
-                    "Script contiene " .. #analysis.backdoors .. " patrón(es) de backdoor sospechoso(s)",
-                    obj:GetFullName(),
-                    backdoorDetails
-                )
-            end
-            
-            -- Verificar riesgos críticos
-            if analysis.obfuscated then
-                criticalIssues = criticalIssues + 1
-                addDetailedResult(
-                    "CRÍTICO",
-                    "⚠️ Código Obfuscado: " .. obj.Name,
-                    "El código está posiblemente obfuscado para ocultar su función",
-                    obj:GetFullName(),
-                    {"Código difícil de leer", "Posible intento de ocultar funcionalidad maliciosa"}
-                )
-            end
-            
-            -- Verificar riesgos altos
-            if analysis.suspicious then
-                highRiskItems = highRiskItems + 1
-                addDetailedResult(
-                    "ALTO",
-                    "🔸 Script Sospechoso: " .. obj.Name,
-                    "Contiene funciones potencialmente peligrosas",
-                    obj:GetFullName(),
-                    analysis.risks
-                )
-            end
-            
-            -- Informar sobre función del script
-            if #analysis.purpose > 0 then
-                addDetailedResult(
-                    "INFO",
-                    "📋 Análisis: " .. obj.Name,
-                    "Categoría: " .. analysis.category .. " | Líneas: " .. analysis.lineCount .. " | Complejidad: " .. analysis.complexity,
-                    obj:GetFullName(),
-                    analysis.purpose
-                )
-            end
-            
-            -- Mostrar funciones detectadas
-            if #analysis.functions > 0 then
-                addDetailedResult(
-                    "INFO",
-                    "⚙️ Funciones: " .. obj.Name,
-                    "Funciones y características detectadas:",
-                    obj:GetFullName(),
-                    analysis.functions
-                )
-            end
-            
-            wait(0.1) -- Pausa para evitar lag
-        end
-        
-        -- Escanear RemoteEvents y RemoteFunctions
-        if obj:IsA("RemoteEvent") or obj:IsA("RemoteFunction") then
-            totalRemotes = totalRemotes + 1
-            
-            local analysis = analyzeRemote(obj)
-            
-            if analysis.suspicious then
-                highRiskItems = highRiskItems + 1
-                addDetailedResult(
-                    "ALTO",
-                    "🔸 Remote Sospechoso: " .. obj.Name,
-                    "RemoteEvent/Function con características sospechosas",
-                    obj:GetFullName(),
-                    analysis.risks
-                )
-            end
-            
-            -- Informar sobre el remote
-            local remoteDetails = {}
-            if #analysis.connections > 0 then
-                for _, conn in pairs(analysis.connections) do
-                    table.insert(remoteDetails, "Conexión: " .. conn)
+                -- Verificar obfuscación básica
+                if string.len(source:gsub("%s", "")) > string.len(source) * 0.9 then
+                    criticalIssues = criticalIssues + 1
+                    addMobileResult(
+                        "CRÍTICO",
+                        "⚠️ " .. obj.Name,
+                        "Código posiblemente obfuscado",
+                        obj:GetFullName()
+                    )
                 end
-            end
-            if #analysis.serverScripts > 0 then
-                table.insert(remoteDetails, "Scripts del servidor: " .. #analysis.serverScripts)
-            end
-            if #analysis.clientScripts > 0 then
-                table.insert(remoteDetails, "Scripts del cliente: " .. #analysis.clientScripts)
+            else
+                addMobileResult(
+                    "MEDIO",
+                    "🔒 " .. obj.Name,
+                    "No se puede leer el código",
+                    obj:GetFullName()
+                )
             end
             
-            addDetailedResult(
-                "INFO",
-                "📡 Remote: " .. obj.Name,
-                "Tipo: " .. analysis.type .. " | Ubicación: " .. (analysis.location:match("%.([^%.]+)$") or "Desconocido"),
-                obj:GetFullName(),
-                remoteDetails
-            )
-            
-            wait(0.05)
+            if totalScripts % 10 == 0 then
+                wait(0.1)
+            end
         end
     end
     
-    -- Resultados finales
+    -- Escanear RemoteEvents
+    for _, obj in pairs(game:GetDescendants()) do
+        if obj:IsA("RemoteEvent") or obj:IsA("RemoteFunction") then
+            local remoteName = obj.Name:lower()
+            if remoteName:find("admin") or remoteName:find("kick") or remoteName:find("ban") or 
+               remoteName:find("money") or remoteName:find("cash") or remoteName:find("hack") then
+                addMobileResult(
+                    "ALTO",
+                    "🔸 " .. obj.Name,
+                    "RemoteEvent sospechoso",
+                    obj:GetFullName()
+                )
+            end
+        end
+    end
+    
+    -- Resultado final
     local securityLevel = "SEGURO"
-    local securityColor = Color3.fromRGB(0, 150, 0)
+    local securityColor = Color3.fromRGB(200, 255, 200)
     
     if backdoorsFound > 0 then
         securityLevel = "PELIGROSO"
-        securityColor = Color3.fromRGB(200, 0, 0)
+        securityColor = Color3.fromRGB(255, 200, 200)
     elseif criticalIssues > 0 then
-        securityLevel = "CRÍTICO"
-        securityColor = Color3.fromRGB(150, 30, 30)
-    elseif highRiskItems > 0 then
         securityLevel = "RIESGO"
-        securityColor = Color3.fromRGB(200, 100, 30)
+        securityColor = Color3.fromRGB(255, 240, 200)
     end
     
-    -- Resumen del escaneo
-    local summaryDetails = {
-        "Scripts escaneados: " .. totalScripts,
-        "RemoteEvents/Functions: " .. totalRemotes,
-        "Backdoors encontrados: " .. backdoorsFound,
-        "Problemas críticos: " .. criticalIssues,
-        "Elementos de alto riesgo: " .. highRiskItems,
-        "Tiempo de escaneo: " .. math.floor(tick() - scanStartTime) .. " segundos"
-    }
-    
-    addDetailedResult(
+    -- Resumen
+    addMobileResult(
         backdoorsFound > 0 and "BACKDOOR" or "INFO",
-        "📊 Resumen del Escaneo",
-        "Nivel de seguridad: " .. securityLevel,
-        "Análisis completo del juego",
-        summaryDetails
+        "📊 Resumen",
+        "Scripts: " .. totalScripts .. " | Backdoors: " .. backdoorsFound .. " | Críticos: " .. criticalIssues,
+        "Escaneo completado"
     )
     
-    -- Recomendaciones de seguridad
-    local recommendations = {}
-    if backdoorsFound > 0 then
-        table.insert(recommendations, "🚨 ACCIÓN INMEDIATA: Revisar y eliminar backdoors detectados")
-        table.insert(recommendations, "📋 Verificar la procedencia de los scripts sospechosos")
-    end
-    if criticalIssues > 0 then
-        table.insert(recommendations, "⚠️ Revisar código obfuscado - puede ocultar funcionalidad maliciosa")
-    end
-    if highRiskItems > 0 then
-        table.insert(recommendations, "🔍 Verificar scripts con funciones potencialmente peligrosas")
-    end
-    
-    table.insert(recommendations, "🔒 Siempre verificar scripts de fuentes externas")
-    table.insert(recommendations, "🛡️ Implementar validación en RemoteEvents")
-    table.insert(recommendations, "📝 Documentar la función de cada script")
-    
-    addDetailedResult(
-        "INFO",
-        "💡 Recomendaciones de Seguridad",
-        "Consejos para mejorar la seguridad del juego",
-        "Sugerencias del escáner",
-        recommendations
-    )
-    
-    -- Finalizar escaneo
-    statusLabel.Text = "✅ Escaneo completado - " .. securityLevel
+    statusLabel.Text = "✅ " .. securityLevel
     statusLabel.BackgroundColor3 = securityColor
-    scanButton.Text = "🔍 Iniciar Escaneo Profundo"
+    scanButton.Text = isMobile and "🔍 Escanear" or "🔍 Iniciar Escaneo"
     scanButton.BackgroundColor3 = Color3.fromRGB(50, 150, 50)
     
     copyButton.Visible = true
+    copyAllButton.Visible = true
+    copyIdButton.Visible = true
     isScanning = false
     
-    -- Actualizar canvas size
     resultsFrame.CanvasSize = UDim2.new(0, 0, 0, resultsLayout.AbsoluteContentSize.Y)
 end
 
--- Función para copiar reporte
-local function copyReport()
-    local report = "🔍 REPORTE DE SEGURIDAD - " .. os.date("%Y-%m-%d %H:%M:%S") .. "\n"
-    report = report .. "════════════════════════════════════════════════════════════════\n\n"
+-- Función para minimizar/maximizar
+local function toggleMinimize()
+    isMinimized = not isMinimized
     
-    for _, result in pairs(scanResults) do
-        report = report .. "[" .. result.severity .. "] " .. result.title .. "\n"
-        report = report .. "Descripción: " .. result.description .. "\n"
-        report = report .. "Ubicación: " .. result.location .. "\n"
-        
-        if #result.details > 0 then
-            report = report .. "Detalles:\n"
-            for _, detail in pairs(result.details) do
-                report = report .. "  • " .. detail .. "\n"
-            end
-        end
-        
-        report = report .. "\n" .. string.rep("-", 60) .. "\n\n"
-    end
+    local targetSize = isMinimized and UDim2.new(0, mainFrame.AbsoluteSize.X, 0, 35) or 
+                      (isMobile and UDim2.new(0, 320, 0, 450) or UDim2.new(0, 480, 0, 600))
     
-    report = report .. "════════════════════════════════════════════════════════════════\n"
-    report = report .. "Reporte generado por Advanced Security Scanner\n"
-    report = report .. "⚠️ Revisar todos los elementos marcados como sospechosos\n"
+    minimizeButton.Text = isMinimized and "+" or "-"
     
-    -- Copiar al portapapeles (si está disponible)
-    if setclipboard then
-        setclipboard(report)
-        statusLabel.Text = "📋 Reporte copiado al portapapeles"
-        statusLabel.BackgroundColor3 = Color3.fromRGB(50, 100, 200)
-    else
-        -- Mostrar en consola si no hay portapapeles
-        print("=== REPORTE DE SEGURIDAD ===")
-        print(report)
-        statusLabel.Text = "📋 Reporte enviado a la consola"
-        statusLabel.BackgroundColor3 = Color3.fromRGB(50, 100, 200)
-    end
+    local tween = TweenService:Create(mainFrame, TweenInfo.new(0.3, Enum.EasingStyle.Quad), {
+        Size = targetSize
+    })
+    tween:Play()
     
-    wait(3)
-    statusLabel.Text = "Listo para nuevo escaneo"
-    statusLabel.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+    contentFrame.Visible = not isMinimized
 end
 
--- Variable para tiempo de escaneo
-local scanStartTime = 0
-
--- Conectar eventos
-scanButton.MouseButton1Click:Connect(function()
-    if not isScanning then
-        scanStartTime = tick()
-        performSecurityScan()
+local function copyMobileReport()
+    local report = "🔍 REPORTE DE SEGURIDAD MÓVIL\n" .. string.rep("=", 40) .. "\n"
+    for _, result in ipairs(scanResults) do
+        report = report .. "\n[" .. result.severity .. "] " .. result.title .. "\n" ..
+                 result.description .. "\n📍 " .. result.location .. "\n"
     end
-end)
-
-copyButton.MouseButton1Click:Connect(copyReport)
-
--- Hacer el frame arrastrable
-local dragging = false
-local dragStart = nil
-local startPos = nil
-
-mainFrame.InputBegan:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 then
-        dragging = true
-        dragStart = input.Position
-        startPos = mainFrame.Position
-    end
-end)
-
-mainFrame.InputChanged:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseMovement and dragging then
-        local delta = input.Position - dragStart
-        mainFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
-    end
-end)
-
-mainFrame.InputEnded:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 then
-        dragging = false
-    end
-end)
-
--- Animación de entrada
-mainFrame.Size = UDim2.new(0, 0, 0, 0)
-mainFrame.Position = UDim2.new(0.5, 0, 0.5, 0)
-
-local openTween = TweenService:Create(mainFrame, TweenInfo.new(0.5, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
-    Size = UDim2.new(0, 650, 0, 700),
-    Position = UDim2.new(0.5, -325, 0.5, -350)
-})
-
-openTween:Play()
-
--- Mensaje de bienvenida
-statusLabel.Text = "🛡️ Escáner de Seguridad Avanzado iniciado - Listo para detectar backdoors"
-
-print("🔍 Advanced Security Scanner v2.0 cargado exitosamente")
-print("📋 Capacidades:")
-print("   • Detección de backdoors y scripts maliciosos")
-print("   • Análisis de RemoteEvents sospechosos")
-print("   • Identificación de código obfuscado")
-print("   • Análisis de propósito de scripts")
-print("   • Detección de funciones peligrosas")
-print("   • Reporte detallado de seguridad")
-print("🚀 ¡Haz clic en 'Iniciar Escaneo Profundo' para comenzar!")
+    setclipboard(report)
+    statusLabel.Text = "📋 Reporte copiado"
+end
